@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BGC-Argo Float Viewer</title>
+  <link rel="stylesheet" href="assets/viewer.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-grid">
+        <div>
+          <p class="eyebrow">BGC-Argo Float Viewer</p>
+          <h1>Trajectories, figures, and quick diagnostics.</h1>
+          <p class="header-lead">
+            Explore delayed-mode, real-time, and flagged delayed-mode floats on one global view.
+            Click a trajectory to open the full time-series and scatter-plot gallery for that float.
+          </p>
+          <div class="header-tags">
+            <span class="header-tag">Default map: DM trajectories</span>
+            <span class="header-tag">Selectable RT and flagged DM layers</span>
+            <span class="header-tag">Standalone static site</span>
+          </div>
+        </div>
+        <aside class="header-card">
+          <p class="eyebrow header-card-kicker">Viewer Snapshot</p>
+          <div class="header-stats">
+            <div class="header-stat"><strong>5064</strong><span>Total floats indexed</span></div>
+            <div class="header-stat"><strong>3560</strong><span>DM floats</span></div>
+            <div class="header-stat"><strong>1442</strong><span>RT floats</span></div>
+            <div class="header-stat"><strong>62</strong><span>Flagged DM floats</span></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="overview-card">
+      <div>
+        <p class="section-kicker">Coverage</p>
+        <p>
+          The viewer reads per-float NetCDFs and their figure galleries produced by the bgc-argo-pipeline.
+          DM, RT, and flagged DM sources stay separate in the interface, while sharing one searchable world view.
+        </p>
+        <div class="source-list">
+          <div class="source-card">
+            <strong>DM source</strong>
+            <code>/data/rd_exchange/amignot/BGC_Argo/WEEKLY_UPDATE/FLOATS_DM</code>
+          </div>
+          <div class="source-card">
+            <strong>RT source</strong>
+            <code>/data/rd_exchange/amignot/BGC_Argo/WEEKLY_UPDATE/FLOATS_RT</code>
+          </div>
+          <div class="source-card">
+            <strong>Viewer output</strong>
+            <code>docs</code>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p class="section-kicker">How To Use It</p>
+        <p>
+          Keep DM checked for the default global overview, switch on RT or flagged DM when needed,
+          then search by WMO or click directly on a trajectory endpoint to open its figures.
+        </p>
+        <div class="source-list">
+          <div class="source-card">
+            <strong>Generated</strong>
+            <code>2026-04-15 09:10 UTC</code>
+          </div>
+          <div class="source-card">
+            <strong>Figures</strong>
+            <code>Time series + validation scatter plots</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="viewer-grid">
+      <section class="panel">
+        <div class="map-toolbar">
+          <div class="toolbar-row">
+            <div>
+              <p class="card-kicker">Global Map</p>
+              <div class="map-summary" id="map-summary">Loading trajectories...</div>
+            </div>
+            <div class="search-wrap">
+              <input id="float-search" type="search" placeholder="Search WMO, combo, or layer">
+              <button id="search-button" type="button">Select Float</button>
+            </div>
+          </div>
+          <div class="toolbar-row compact">
+            <div class="toggle-row">
+              <label class="toggle dm"><input type="checkbox" data-filter="dm" checked><span class="swatch"></span><span>DM</span></label>
+              <label class="toggle rt"><input type="checkbox" data-filter="rt"><span class="swatch"></span><span>RT</span></label>
+              <label class="toggle flagged_dm"><input type="checkbox" data-filter="flagged_dm"><span class="swatch"></span><span>Flagged DM</span></label>
+            </div>
+            <div class="map-summary" id="search-count"></div>
+          </div>
+          <div class="search-results" id="search-results"></div>
+        </div>
+        <div class="map-shell">
+          <svg id="trajectory-map" aria-label="Global float trajectories"></svg>
+        </div>
+      </section>
+
+      <aside class="detail-panel">
+        <div id="detail-empty" class="empty-state">
+          <div>
+            <p class="card-kicker">Float Detail</p>
+            <p>Select a trajectory to open its figures, NetCDF, and screening notes.</p>
+          </div>
+        </div>
+        <div id="detail-content" hidden></div>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="footer">
+    Viewer assets: <code>assets/viewer.css</code>, <code>assets/viewer.js</code>, <code>viewer_data.js</code>.
+  </footer>
+
+  <script src="viewer_data.js"></script>
+  <script src="assets/viewer.js"></script>
+</body>
+</html>

@@ -181,8 +181,32 @@ def _link_or_copy(src, dst):
         shutil.copy2(src, dst)
 
 
-def _figure_entry(fig_path, output_dir, category, wmo, link_figures):
+def _recompress_figure(src, dst, max_width, quality):
+    """Resize+JPEG-encode src into dst (skipped if dst is fresher)."""
+    from PIL import Image
+    if dst.exists() and dst.stat().st_mtime >= src.stat().st_mtime:
+        return
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    with Image.open(src) as im:
+        im = im.convert("RGB")
+        if im.width > max_width:
+            ratio = max_width / im.width
+            im = im.resize((max_width, int(im.height * ratio)), Image.LANCZOS)
+        im.save(dst, "JPEG", quality=quality, optimize=True, progressive=True)
+
+
+def _figure_entry(fig_path, output_dir, category, wmo, link_figures,
+                  recompress=False, max_width=1200, quality=78):
     label = _figure_label(fig_path)
+    if recompress:
+        local = output_dir / "figures" / category / wmo / (fig_path.stem + ".jpg")
+        try:
+            _recompress_figure(fig_path, local, max_width, quality)
+        except Exception as exc:
+            print(f"  ! recompress {fig_path.name}: {exc}")
+            return None
+        rel = local.relative_to(output_dir).as_posix()
+        return {"label": label, "path": rel, "file_name": local.name}
     if link_figures:
         local = output_dir / "figures" / category / wmo / fig_path.name
         _link_or_copy(fig_path, local)
@@ -200,7 +224,9 @@ def _nc_rel(nc_path, output_dir, category, wmo, link_figures):
     return nc_path.as_posix()
 
 
-def _scan_float_file(nc_path, dm_root, rt_root, category, combo, output_dir, link_figures):
+def _scan_float_file(nc_path, dm_root, rt_root, category, combo, output_dir,
+                     link_figures, include_figures=True, recompress=False,
+                     max_width=1200, quality=78, drop_netcdf=False):
     with netCDF4.Dataset(str(nc_path), "r") as nc:
         lon = _normalize_lon(_safe_array(nc.variables["LONGITUDE"]))
         lat = _safe_array(nc.variables["LATITUDE"])
@@ -228,11 +254,16 @@ def _scan_float_file(nc_path, dm_root, rt_root, category, combo, output_dir, lin
         present_vars = [name for name in KNOWN_VARIABLES if name in nc.variables]
 
     wmo = nc_path.stem
-    fig_dir = _figure_dir(dm_root, rt_root, category, combo, wmo)
     figures = []
-    if fig_dir.exists():
-        for fig_path in sorted(fig_dir.glob("*.png"), key=_figure_key):
-            figures.append(_figure_entry(fig_path, output_dir, category, wmo, link_figures))
+    if include_figures:
+        fig_dir = _figure_dir(dm_root, rt_root, category, combo, wmo)
+        if fig_dir.exists():
+            for fig_path in sorted(fig_dir.glob("*.png"), key=_figure_key):
+                entry = _figure_entry(fig_path, output_dir, category, wmo,
+                                      link_figures, recompress=recompress,
+                                      max_width=max_width, quality=quality)
+                if entry is not None:
+                    figures.append(entry)
 
     screening_src = _screening_path(dm_root, wmo) if category == "flagged_dm" else None
     screening_reason = None
@@ -254,7 +285,8 @@ def _scan_float_file(nc_path, dm_root, rt_root, category, combo, output_dir, lin
         "root_label": CATEGORY_META[category]["root_label"],
         "combo": combo,
         "source_path": str(nc_path),
-        "nc_path": _nc_rel(nc_path, output_dir, category, wmo, link_figures),
+        "nc_path": None if drop_netcdf or not include_figures
+                       else _nc_rel(nc_path, output_dir, category, wmo, link_figures),
         "screening_path": screening_rel,
         "screening_reason": screening_reason,
         "n_profiles": int(len(cycles)),
@@ -269,13 +301,17 @@ def _scan_float_file(nc_path, dm_root, rt_root, category, combo, output_dir, lin
     }
 
 
-def _build_payload(dm_root, rt_root, output_dir, link_figures):
+def _build_payload(dm_root, rt_root, output_dir, link_figures,
+                   include_figures=True, recompress=False,
+                   max_width=1200, quality=78, drop_netcdf=False):
     floats = []
     counts = {"dm": 0, "rt": 0, "flagged_dm": 0}
     for category, combo, nc_path in _iter_float_files(dm_root, rt_root):
         try:
             entry = _scan_float_file(nc_path, dm_root, rt_root, category, combo,
-                                     output_dir, link_figures)
+                                     output_dir, link_figures, include_figures,
+                                     recompress=recompress, max_width=max_width,
+                                     quality=quality, drop_netcdf=drop_netcdf)
         except Exception as exc:
             print(f"  ! skip {nc_path}: {exc}")
             continue
@@ -449,6 +485,14 @@ def main():
                         help="Symlink/copy figures into output/figures so the site is portable")
     parser.add_argument("--no-link-figures", dest="link_figures", action="store_false")
     parser.set_defaults(link_figures=None)
+    parser.add_argument("--recompress", action="store_true",
+                        help="Resize+re-encode figures to JPEG (web-optimized) instead of linking")
+    parser.add_argument("--max-width", type=int, default=1200,
+                        help="Max image width for --recompress (default 1200 px)")
+    parser.add_argument("--quality", type=int, default=78,
+                        help="JPEG quality for --recompress (default 78)")
+    parser.add_argument("--drop-netcdf", action="store_true",
+                        help="Do not include per-float .nc files in the bundle")
     args = parser.parse_args()
 
     cfg = _load_config(args.config)
@@ -471,6 +515,10 @@ def main():
         dm_root if dm_root.as_posix() else None,
         rt_root if rt_root.as_posix() else None,
         output_dir, link_figures,
+        recompress=args.recompress,
+        max_width=args.max_width,
+        quality=args.quality,
+        drop_netcdf=args.drop_netcdf,
     )
     _copy_assets(output_dir)
 
