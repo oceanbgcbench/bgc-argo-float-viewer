@@ -1,0 +1,7 @@
+# BGC-Argo Float Viewer — default configuration.
+# CLI flags to build_viewer.py override these values.
+
+dm_root: /data/rd_exchange/amignot/BGC_Argo/WEEKLY_UPDATE/FLOATS_DM
+rt_root: /data/rd_exchange/amignot/BGC_Argo/WEEKLY_UPDATE/FLOATS_RT
+output_dir: ./output
+link_figures: true
