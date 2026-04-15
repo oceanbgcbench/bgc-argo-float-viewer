@@ -346,6 +346,8 @@ h2 {
   text-align: center;
 }
 .empty-state p { font-size: 12px; }
+/* The `hidden` HTML attribute must win over `display: flex` above. */
+[hidden] { display: none !important; }
 .detail-heading {
   display: flex; justify-content: space-between; align-items: flex-start;
   gap: 10px; margin-bottom: 10px;
