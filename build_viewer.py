@@ -356,9 +356,9 @@ def _html_index(payload):
             Click a trajectory to open the full time-series and scatter-plot gallery for that float.
           </p>
           <div class="header-tags">
-            <span class="header-tag">Default map: DM trajectories</span>
-            <span class="header-tag">Selectable RT and flagged DM layers</span>
-            <span class="header-tag">Standalone static site</span>
+            <span class="header-tag">Scroll-wheel zoom · drag to pan · double-click to reset</span>
+            <span class="header-tag">Filter by sensor (BBP700, CHLA, DOXY, NO3, PH, POC)</span>
+            <span class="header-tag">DM / RT / Flagged-DM layers</span>
           </div>
         </div>
         <aside class="header-card">
@@ -436,6 +436,9 @@ def _html_index(payload):
               <label class="toggle flagged_dm"><input type="checkbox" data-filter="flagged_dm"><span class="swatch"></span><span>Flagged DM</span></label>
             </div>
             <div class="map-summary" id="search-count"></div>
+          </div>
+          <div class="sensor-filter-row" id="sensor-filter-row">
+            <span class="sensor-kicker">Sensors (AND):</span>
           </div>
           <div class="search-results" id="search-results"></div>
         </div>

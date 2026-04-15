@@ -242,6 +242,42 @@ h2 {
 .toggle.rt .swatch         { background: var(--rt); }
 .toggle.flagged_dm .swatch { background: var(--flagged_dm); }
 
+.sensor-filter-row {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border-soft);
+}
+.sensor-filter-row .sensor-kicker {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--navy-2);
+  font-weight: 700;
+  align-self: center;
+  margin-right: 4px;
+}
+.sensor-toggle {
+  display: inline-flex; gap: 4px; align-items: center;
+  padding: 3px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: white;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  letter-spacing: 0.02em;
+}
+.sensor-toggle input { display: none; }
+.sensor-toggle:hover { border-color: var(--navy-2); color: var(--navy-2); }
+.sensor-toggle:has(input:checked) {
+  background: var(--navy-2);
+  color: white;
+  border-color: var(--navy-2);
+}
+
 .search-results {
   margin-top: 10px;
   max-height: 160px;
@@ -270,11 +306,22 @@ h2 {
   background: #eef3f8;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  cursor: grab;
+  user-select: none;
 }
-.graticule     { fill: none; stroke: #cad7e4; stroke-width: 0.5; }
-.land          { fill: #d6dfe8; stroke: #b7c2cf; stroke-width: 0.5; }
-.trajectory    { fill: none; stroke-width: 1.2; opacity: 0.75; cursor: pointer; }
-.trajectory.selected { stroke-width: 2.4; opacity: 1; }
+#trajectory-map.dragging { cursor: grabbing; }
+.graticule     { fill: none; stroke: #cad7e4; stroke-width: 0.5; pointer-events: none; }
+.graticule-label { fill: #8a9bb0; font-size: 10px; pointer-events: none;
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+.map-frame     { fill: #eef3f8; stroke: #cad7e4; stroke-width: 1; }
+.land          { fill: #d9e2ec; stroke: #9fb0c3; stroke-width: 0.5;
+                 pointer-events: none; }
+.land-layer    { pointer-events: none; }
+.trajectory-hit { fill: none; stroke: transparent; stroke-width: 10;
+                  pointer-events: stroke; cursor: pointer; }
+.trajectory    { fill: none; stroke-width: 1.2; opacity: 0.75; cursor: pointer;
+                 pointer-events: stroke; }
+.trajectory.selected { stroke-width: 2.6; opacity: 1; }
 .trajectory.dm         { stroke: var(--dm); }
 .trajectory.rt         { stroke: var(--rt); }
 .trajectory.flagged_dm { stroke: var(--flagged_dm); }
