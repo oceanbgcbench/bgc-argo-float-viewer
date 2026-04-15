@@ -1,1 +1,4 @@
-/data/rd_exchange/amignot/BGC_Argo/WEEKLY_UPDATE/FLOATS_DM/FLAGGED/screening/6901651.txt
+Validation screening: flagged due to poor metrics.
+Decision rule: any bad.
+CHLA_CALIBRATED: N=60 r2=0.603 RMSD=0.163
+POC_SMALL: N=261 r2=0.284 RMSD=0.189
