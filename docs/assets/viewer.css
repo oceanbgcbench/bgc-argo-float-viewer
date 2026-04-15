@@ -278,6 +278,45 @@ h2 {
   border-color: var(--navy-2);
 }
 
+/* ---------- Year range slider ---------- */
+.year-filter-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border-soft);
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+.year-filter-row input[type="range"] {
+  flex: 1 1 160px;
+  accent-color: var(--navy-2);
+  cursor: pointer;
+  min-width: 140px;
+  max-width: 220px;
+}
+.year-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--navy);
+  min-width: 32px;
+  text-align: center;
+}
+.year-dash { color: var(--text-dim); }
+.year-reset {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.year-reset:hover { background: var(--accent-bg); color: var(--navy-2); border-color: var(--navy-2); }
+
 .search-results {
   margin-top: 10px;
   max-height: 160px;
@@ -321,7 +360,11 @@ h2 {
                   pointer-events: stroke; cursor: pointer; }
 .trajectory    { fill: none; stroke-width: 1.2; opacity: 0.75; cursor: pointer;
                  pointer-events: stroke; }
-.trajectory.selected { stroke-width: 2.6; opacity: 1; }
+.trajectory.selected {
+  stroke-width: 3.6;
+  opacity: 1;
+  filter: drop-shadow(0 0 4px rgba(26, 54, 93, 0.65));
+}
 .trajectory.dm         { stroke: var(--dm); }
 .trajectory.rt         { stroke: var(--rt); }
 .trajectory.flagged_dm { stroke: var(--flagged_dm); }
@@ -329,7 +372,12 @@ h2 {
 .endpoint.dm         { fill: var(--dm); }
 .endpoint.rt         { fill: var(--rt); }
 .endpoint.flagged_dm { fill: var(--flagged_dm); }
-.endpoint.selected { stroke: var(--navy); stroke-width: 1.8; }
+.endpoint.selected {
+  stroke: #ffb703;
+  stroke-width: 2.4;
+  r: 6;
+  filter: drop-shadow(0 0 6px rgba(255, 183, 3, 0.85));
+}
 .hidden-layer { display: none; }
 
 /* ---------- Detail panel ---------- */
@@ -346,6 +394,8 @@ h2 {
   text-align: center;
 }
 .empty-state p { font-size: 12px; }
+/* The `hidden` HTML attribute must win over `display: flex` above. */
+[hidden] { display: none !important; }
 .detail-heading {
   display: flex; justify-content: space-between; align-items: flex-start;
   gap: 10px; margin-bottom: 10px;

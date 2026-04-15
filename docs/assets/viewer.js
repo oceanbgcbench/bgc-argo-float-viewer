@@ -14,6 +14,7 @@
     selectedId: null,
     filters: { dm: true, rt: false, flagged_dm: false },
     sensorFilters: new Set(),   // empty = no sensor constraint
+    yearRange: null,            // [minYear, maxYear] inclusive; null = all
     zoom: { scale: 1, tx: 0, ty: 0 },
   };
 
@@ -33,7 +34,6 @@
     { key: "DOXY",              label: "DOXY"   },
     { key: "NITRATE",           label: "NO3"    },
     { key: "PH_IN_SITU_TOTAL",  label: "PH"     },
-    { key: "POC_TOTAL",         label: "POC"    },
   ];
 
   const layerGroups = {};
@@ -191,12 +191,28 @@
   }
 
   // ---------- filtering ----------
+  function entryYearSpan(entry) {
+    const parse = (s) => {
+      const y = parseInt(String(s || "").slice(0, 4), 10);
+      return Number.isFinite(y) ? y : null;
+    };
+    return [parse(entry.start_date), parse(entry.end_date)];
+  }
+
   function entryMatches(entry) {
     if (!state.filters[entry.category]) return false;
-    if (state.sensorFilters.size === 0) return true;
-    const vars = new Set(entry.variables || []);
-    for (const sensor of state.sensorFilters) {
-      if (!vars.has(sensor)) return false;
+    if (state.sensorFilters.size > 0) {
+      const vars = new Set(entry.variables || []);
+      for (const sensor of state.sensorFilters) {
+        if (!vars.has(sensor)) return false;
+      }
+    }
+    if (state.yearRange) {
+      const [lo, hi] = state.yearRange;
+      const [s, e] = entryYearSpan(entry);
+      if (s !== null && e !== null) {
+        if (e < lo || s > hi) return false;
+      }
     }
     return true;
   }
@@ -215,11 +231,14 @@
     });
     const visibleCount = data.floats.filter(entryMatches).length;
     const sensorNote = state.sensorFilters.size
-      ? ` • sensors: ${Array.from(state.sensorFilters).map(
+      ? ` · sensors: ${Array.from(state.sensorFilters).map(
           (k) => (SENSORS.find((s) => s.key === k) || { label: k }).label
         ).join("+")}`
       : "";
-    elements.totals.textContent = `${visibleCount} visible trajectories${sensorNote}`;
+    const yearNote = state.yearRange
+      ? ` · ${state.yearRange[0]}–${state.yearRange[1]}`
+      : "";
+    elements.totals.textContent = `${visibleCount} visible trajectories${sensorNote}${yearNote}`;
   }
 
   // ---------- detail panel ----------
@@ -363,6 +382,59 @@
     });
   }
 
+  // ---------- year range slider UI ----------
+  function buildYearRangeSlider() {
+    const container = document.getElementById("year-filter-row");
+    if (!container) return;
+
+    // Global min/max year from all floats.
+    let yMin = Infinity, yMax = -Infinity;
+    data.floats.forEach((entry) => {
+      const [s, e] = entryYearSpan(entry);
+      if (s !== null && s < yMin) yMin = s;
+      if (e !== null && e > yMax) yMax = e;
+    });
+    if (!Number.isFinite(yMin) || !Number.isFinite(yMax)) return;
+    if (yMax < yMin) yMax = yMin;
+
+    container.innerHTML = `
+      <span class="sensor-kicker">Years:</span>
+      <input type="range" class="year-slider" id="year-start" min="${yMin}" max="${yMax}" value="${yMin}" step="1">
+      <span class="year-value" id="year-start-value">${yMin}</span>
+      <span class="year-dash">—</span>
+      <input type="range" class="year-slider" id="year-end" min="${yMin}" max="${yMax}" value="${yMax}" step="1">
+      <span class="year-value" id="year-end-value">${yMax}</span>
+      <button type="button" class="year-reset" id="year-reset">Reset</button>
+    `;
+
+    const startEl = document.getElementById("year-start");
+    const endEl = document.getElementById("year-end");
+    const startLabel = document.getElementById("year-start-value");
+    const endLabel = document.getElementById("year-end-value");
+
+    const applyRange = () => {
+      let lo = parseInt(startEl.value, 10);
+      let hi = parseInt(endEl.value, 10);
+      if (lo > hi) { const t = lo; lo = hi; hi = t; }
+      startLabel.textContent = lo;
+      endLabel.textContent = hi;
+      if (lo === yMin && hi === yMax) {
+        state.yearRange = null;
+      } else {
+        state.yearRange = [lo, hi];
+      }
+      updateLayers();
+    };
+
+    startEl.addEventListener("input", applyRange);
+    endEl.addEventListener("input", applyRange);
+    document.getElementById("year-reset").addEventListener("click", () => {
+      startEl.value = yMin;
+      endEl.value = yMax;
+      applyRange();
+    });
+  }
+
   // ---------- zoom / pan ----------
   function applyZoom() {
     if (!zoomLayer) return;
@@ -480,6 +552,7 @@
       });
 
     buildSensorFilters();
+    buildYearRangeSlider();
     bindZoom();
     bindControls();
   }

@@ -440,6 +440,7 @@ def _html_index(payload):
           <div class="sensor-filter-row" id="sensor-filter-row">
             <span class="sensor-kicker">Sensors (AND):</span>
           </div>
+          <div class="year-filter-row" id="year-filter-row"></div>
           <div class="search-results" id="search-results"></div>
         </div>
         <div class="map-shell">
